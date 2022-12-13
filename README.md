@@ -1,5 +1,4 @@
 # FAST API
----
 
 run: `uvicorn main:app --reload`   
 > main = python file   
