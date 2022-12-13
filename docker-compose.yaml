@@ -1,0 +1,26 @@
+version: "3.8"
+services:
+  api:
+    build:
+      context: .
+    depends_on:
+      - postgres
+    ports:
+      - 8000:8000
+    volumes:
+      - ./:/usr/src/app:ro
+  
+  postgres:
+    image: postgres:15.1
+    restart: always
+    environment:
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=fastapi
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+
+volumes:
+  postgres-db:
