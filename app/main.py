@@ -1,11 +1,34 @@
+import os
 from fastapi import FastAPI, Response, status, HTTPException
 from fastapi.params import Body
 from pydantic import BaseModel
 from typing import Optional
 from random import randrange
+from dotenv import load_dotenv
+import psycopg2
+from psycopg2.extras import RealDictCursor
+
+
+load_dotenv()
 
 
 app = FastAPI()
+
+
+try:
+    conn = psycopg2.connect(
+        host = 'fast_api-postgres-1',
+        database = os.getenv('POSTGRES_DB'),
+        user = os.getenv('POSTGRES_USERNAME'),
+        password = os.getenv('POSTGRES_PASSWORD'),
+        cursor_factory = RealDictCursor
+    )
+    cursor = conn.cursor()
+    print('db connection succesfully')
+except psycopg2.OperationalError as error:
+    print('db connection failed: OperatioanlError: ', error)
+except psycopg2.DatabaseError as error:
+    print('db connection failed: DatabaseError: ', error)
 
 
 # schema
@@ -42,7 +65,9 @@ async def root():
 
 @app.get("/posts")
 def get_posts():
-    return {"data": my_posts}
+    cursor.execute("select * from public.posts")
+    posts = cursor.fetchall()
+    return {"data": posts}
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
