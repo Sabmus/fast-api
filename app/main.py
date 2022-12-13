@@ -82,22 +82,26 @@ def create_post(post: Post):
     """
     # print(post)  # pydantic object
     # print(post.dict())  # regular python dict
-    post_dict = post.dict()
-    post_dict["id"] = randrange(0, 1000000)
-    my_posts.append(post_dict)
-
-    return {"data": post_dict}
+    
+    cursor.execute("insert into public.posts (title, content, published, rating) values (%s, %s, %s, %s) returning *", 
+                    (post.title, post.content, post.published, post.rating))
+    new_post = cursor.fetchone()
+    conn.commit()
+    return {"data": new_post}
 
 
 @app.get("/posts/{id}")
 def get_post(id: int, response: Response):  # FastApi does the int conversion
-    post = find_post(id)
+    cursor.execute("select * from public.posts where id = %s", (str(id)))
+    post = cursor.fetchone()
+
+    # post = find_post(id)
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post {id} not found")
         # the above is equal to below
         # response.status_code = status.HTTP_404_NOT_FOUND
         # return {"message": f"post {id} not found"}
-        
+
     return {"data": post}
 
 
