@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 from .database import engine
 from . import models
-from .routers import posts, users
+from .routers import posts, users, auth
 
 
 # for loading env file
@@ -17,6 +17,7 @@ app = FastAPI()
 
 app.include_router(posts.router)
 app.include_router(users.router)
+app.include_router(auth.router)
 
 
 @app.get("/")

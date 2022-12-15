@@ -2,24 +2,25 @@ from fastapi import status, HTTPException, Depends, APIRouter, Response
 from sqlalchemy.orm import Session
 from typing import List
 
-from ..database import get_db
+from .. import database
 from .. import schemas
 from .. import models
 
 
 router = APIRouter(
-    prefix="/posts"
+    prefix="/posts",
+    tags=["Posts"]
 )
 
 
 @router.get("/", response_model=List[schemas.PostResponse])
-def get_posts(db: Session = Depends(get_db)):
+def get_posts(db: Session = Depends(database.get_db)):
     posts = db.query(models.Post).all()
     return posts
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.PostResponse)
-def create_post(post: schemas.Post, db: Session = Depends(get_db)):
+def create_post(post: schemas.Post, db: Session = Depends(database.get_db)):
     new_post = models.Post(**post.dict())
     db.add(new_post)
     db.commit()
@@ -28,7 +29,7 @@ def create_post(post: schemas.Post, db: Session = Depends(get_db)):
 
 
 @router.get("/{id}", response_model=schemas.PostResponse)
-def get_post(id: int, db: Session = Depends(get_db)):  # FastApi does the int conversion
+def get_post(id: int, db: Session = Depends(database.get_db)):  # FastApi does the int conversion
     post = db.query(models.Post).filter(models.Post.id==id).first()
     
     if post is None:
@@ -38,7 +39,7 @@ def get_post(id: int, db: Session = Depends(get_db)):  # FastApi does the int co
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(id: int, db: Session = Depends(get_db)):
+def delete_post(id: int, db: Session = Depends(database.get_db)):
     post_query = db.query(models.Post).filter(models.Post.id==id)
     
     if post_query.first() is None:
@@ -51,7 +52,7 @@ def delete_post(id: int, db: Session = Depends(get_db)):
     
 
 @router.put("/{id}", response_model=schemas.PostResponse)
-def update_post(id: int, post: schemas.Post, db: Session = Depends(get_db)):
+def update_post(id: int, post: schemas.Post, db: Session = Depends(database.get_db)):
     post_query = db.query(models.Post).filter(models.Post.id==id)
     post_to_update = post_query.first()
 
