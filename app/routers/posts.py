@@ -5,6 +5,7 @@ from typing import List
 from .. import database
 from .. import schemas
 from .. import models
+from .. import oauth2
 
 
 router = APIRouter(
@@ -20,7 +21,7 @@ def get_posts(db: Session = Depends(database.get_db)):
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.PostResponse)
-def create_post(post: schemas.Post, db: Session = Depends(database.get_db)):
+def create_post(post: schemas.Post, db: Session = Depends(database.get_db), current_user: models.User = Depends(oauth2.get_current_active_user)):
     new_post = models.Post(**post.dict())
     db.add(new_post)
     db.commit()
@@ -39,7 +40,7 @@ def get_post(id: int, db: Session = Depends(database.get_db)):  # FastApi does t
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(id: int, db: Session = Depends(database.get_db)):
+def delete_post(id: int, db: Session = Depends(database.get_db), current_user: models.User = Depends(oauth2.get_current_active_user)):
     post_query = db.query(models.Post).filter(models.Post.id==id)
     
     if post_query.first() is None:
@@ -52,7 +53,7 @@ def delete_post(id: int, db: Session = Depends(database.get_db)):
     
 
 @router.put("/{id}", response_model=schemas.PostResponse)
-def update_post(id: int, post: schemas.Post, db: Session = Depends(database.get_db)):
+def update_post(id: int, post: schemas.Post, db: Session = Depends(database.get_db), current_user: models.User = Depends(oauth2.get_current_active_user)):
     post_query = db.query(models.Post).filter(models.Post.id==id)
     post_to_update = post_query.first()
 
