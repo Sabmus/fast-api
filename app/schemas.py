@@ -1,34 +1,36 @@
-from pydantic import BaseModel, SecretStr, EmailStr
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
 
-# schema
-class Post(BaseModel):
-    title: str
-    content: str
-    published: bool = True  # default True value
-    rating: Optional[int] = None  # optional field
 
-
-class PostResponse(Post):
-    created_at: datetime
-
-    # for converting a sqlalchemy model to pydantinc model (?) (according to yt tuto)
-    class Config:
-        orm_mode = True
-        fields = {'rating': {'exclude': True}}
-
-
-class UserCreate(BaseModel):
+class UserBase(BaseModel):
     email: EmailStr
     password: str
 
 
-class UserResponse(UserCreate):
-    password: SecretStr
+class User(UserBase):
+    id: int
+    email: str
 
     class Config:
         orm_mode = True
+        fields = {'password': {'exclude': True}}
+
+
+class PostBase(BaseModel):
+    title: str
+    content: str
+    published: bool = True
+    rating: Optional[int] = None
+
+
+class Post(PostBase):
+    created_at: datetime
+    author: User
+
+    class Config:
+        orm_mode = True
+        fields = {'rating': {'exclude': True}}
 
 
 class Token(BaseModel):
@@ -38,3 +40,12 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: int | None = None
+
+
+class UserPosts(UserBase):
+    email: str
+    posts: list[Post] = []
+
+    class Config:
+        orm_mode = True
+        fields = {'password': {'exclude': True}}
