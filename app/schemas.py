@@ -49,3 +49,8 @@ class UserPosts(UserBase):
     class Config:
         orm_mode = True
         fields = {'password': {'exclude': True}}
+
+
+class VoteBase(BaseModel):
+    post_id: int
+    post_dir: bool  # 0 decrease post likes, 1 increase post likes

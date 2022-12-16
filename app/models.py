@@ -30,3 +30,9 @@ class Post(Base):
     updated_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), server_onupdate=func.now())  # not working, need fix later
 
     author = relationship("User", back_populates="posts")
+
+
+class Vote(Base):
+    __tablename__ = 'votes'
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    post_id = Column(Integer, ForeignKey('posts.id', ondelete='CASCADE'), primary_key=True)
